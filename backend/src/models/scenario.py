@@ -13,4 +13,6 @@ class CapacityScenario(Base):
  warmup_minutes:Mapped[int]=mapped_column(Integer)
  replications:Mapped[int]=mapped_column(Integer)
  seed:Mapped[int]=mapped_column(Integer)
+ queue_capacity:Mapped[int]=mapped_column(Integer,nullable=True)
+ max_wait_minutes:Mapped[float]=mapped_column(Float,nullable=True)
  created_at:Mapped[str]=mapped_column(String(64))

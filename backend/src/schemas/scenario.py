@@ -9,3 +9,7 @@ class ScenarioInput(BaseModel):
  warmup_minutes:int=Field(default=120,ge=0,le=1440)
  replications:int=Field(default=30,ge=5,le=100)
  seed:int=Field(default=2206,ge=0,le=2147483647)
+ # 候位容量仅计排队样本、不含在办样本；null表示无限候位（历史口径）。
+ queue_capacity:int|None=Field(default=None,ge=0,le=10000)
+ # 最长等候时间（分钟）；null表示不限等候时间。
+ max_wait_minutes:float|None=Field(default=None,gt=0,le=100000,allow_inf_nan=False)

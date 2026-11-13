@@ -15,6 +15,18 @@ def export(db,id):
  report=db.get(Report,id)
  if not report:raise HTTPException(404,"报告不存在")
  result=require_completed(db,report.run_id).result
- columns=["replication","arrivals","mean_wait_minutes","p_wait","max_wait_minutes","busy_fraction"]
- buf=io.StringIO();writer=csv.DictWriter(buf,columns);writer.writeheader();writer.writerows(result["simulation"]["replications"])
+ sim=result["simulation"]
+ columns=["replication","arrivals","served","rejected","abandoned","loss_rate","mean_wait_minutes","p_wait","max_wait_minutes","busy_fraction"]
+ buf=io.StringIO();writer=csv.writer(buf)
+ cap="无限候位" if sim.get("queue_capacity") is None else f"候位容量{sim['queue_capacity']}"
+ mw="不限等候" if sim.get("max_wait_minutes") is None else f"最长等候{sim['max_wait_minutes']:g}分钟"
+ writer.writerow([f"# {cap} / {mw} / 观测{sim['duration_minutes']}分钟 / 预热{sim['warmup_minutes']}分钟 / seed {sim['seed']}"])
+ # 汇总对账行：办理+拒收+离队=到达，损失率=(拒收+离队)/到达。
+ d=sim["disposition"]
+ writer.writerow(["# 汇总","到达","办理","拒收","离队","损失率","对账(办理+拒收+离队)"])
+ writer.writerow(["# 合计",d["arrivals"],d["served"],d["rejected"],d["abandoned"],f"{d['loss_rate']:.6f}",d["served"]+d["rejected"]+d["abandoned"]])
+ writer.writerow(columns)
+ dict_writer=csv.DictWriter(buf,columns,extrasaction="ignore")
+ for row in sim["replications"]:
+  dict_writer.writerow(row)
  return "\ufeff"+buf.getvalue()

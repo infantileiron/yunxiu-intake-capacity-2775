@@ -19,7 +19,10 @@ def seed():
   if not db.get(ServiceProfile,"demo-profile"):db.add(ServiceProfile(id="demo-profile",name="全日均值·单窗口服务剖面",dataset_id="demo-data",period="all",created_at=now(),**fit_profile(rows,"all")));db.flush()
   for c in (2,3,4):
    id=f"demo-scenario-{c}"
-   if not db.get(CapacityScenario,id):db.add(CapacityScenario(id=id,name=f"{c}窗口·全日容量预演",profile_id="demo-profile",windows=c,arrival_multiplier=1,service_multiplier=1,duration_minutes=480,warmup_minutes=120,replications=30,seed=2206,created_at=now()))
+   if not db.get(CapacityScenario,id):db.add(CapacityScenario(id=id,name=f"{c}窗口·全日容量预演",profile_id="demo-profile",windows=c,arrival_multiplier=1,service_multiplier=1,duration_minutes=480,warmup_minutes=120,replications=30,seed=2206,queue_capacity=None,max_wait_minutes=None,created_at=now()))
+  # 有限候位演示方案：候位仅计排队样本（不含在办），满员拒收；等候超过30分钟离队。
+  if not db.get(CapacityScenario,"demo-scenario-finite"):
+   db.add(CapacityScenario(id="demo-scenario-finite",name="3窗口·有限候位与超时预演",profile_id="demo-profile",windows=3,arrival_multiplier=1,service_multiplier=1,duration_minutes=480,warmup_minutes=120,replications=30,seed=2206,queue_capacity=6,max_wait_minutes=30,created_at=now()))
   db.flush()
   if not db.get(SimulationRun,"demo-run"):
    db.add(SimulationRun(id="demo-run",scenario_id="demo-scenario-3",status="completed",result=analyze(db.get(ServiceProfile,"demo-profile"),db.get(CapacityScenario,"demo-scenario-3")),error="",created_at=now()));db.flush()
